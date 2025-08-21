@@ -1,0 +1,8 @@
+@keyframes colorChange {
+  0%, 100% { color: #fff; }
+  50% { color: #f97316; } /* Tailwind orange-500 */
+}
+
+.animate-color-change {
+  animation: colorChange 1.2s infinite;
+}
