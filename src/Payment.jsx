@@ -5,12 +5,13 @@ export default function Payment() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const items = JSON.parse(params.get("items") || "[]");
-  const subtotal = Number(params.get("total")) || 0;
+
+  // Calculate subtotal & delivery
+  const itemsSubtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
+  const deliveryFee = 3000;
+  const finalTotal = itemsSubtotal + deliveryFee;
 
   const [copied, setCopied] = useState(false);
-
-  const deliveryFee = 2000; // flat fee within Lagos
-  const finalTotal = subtotal + deliveryFee;
 
   const accountNumber = "2341354976";
   const bankName = "UBA";
@@ -26,7 +27,9 @@ export default function Payment() {
     <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center px-6 py-16">
       <div className="bg-white shadow-lg rounded-2xl p-8 max-w-2xl w-full">
         {/* Title */}
-        <h2 className="text-3xl font-bold mb-6 text-orange-500 text-center">Complete Your Order</h2>
+        <h2 className="text-3xl font-bold mb-6 text-orange-500 text-center">
+          Complete Your Order
+        </h2>
 
         {/* Order Summary */}
         <div className="mb-6">
@@ -34,26 +37,22 @@ export default function Payment() {
           <ul className="mb-4">
             {items.map(item => (
               <li key={item.key} className="flex justify-between border-b py-2">
-                <span>{item.title}</span>
-                <span className="font-semibold">₦{item.price.toLocaleString()}</span>
+                <span>{item.title} × {item.qty}</span>
+                <span className="font-semibold">
+                  ₦{(item.price * item.qty).toLocaleString()}
+                </span>
               </li>
             ))}
           </ul>
-
-          {/* Subtotal */}
-          <div className="flex justify-between py-2 text-gray-700">
+          <div className="flex justify-between text-gray-700">
             <span>Subtotal:</span>
-            <span>₦{subtotal.toLocaleString()}</span>
+            <span>₦{itemsSubtotal.toLocaleString()}</span>
           </div>
-
-          {/* Delivery Fee */}
-          <div className="flex justify-between py-2 text-gray-700">
+          <div className="flex justify-between text-gray-700">
             <span>Delivery (Lagos):</span>
             <span>₦{deliveryFee.toLocaleString()}</span>
           </div>
-
-          {/* Final Total */}
-          <div className="flex justify-between text-lg font-bold text-orange-600 border-t pt-3 mt-2">
+          <div className="flex justify-between text-lg font-bold text-orange-600 mt-2">
             <span>Total:</span>
             <span>₦{finalTotal.toLocaleString()}</span>
           </div>
