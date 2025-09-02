@@ -21,3 +21,6 @@ body {
   font-family: "Quantico", sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
