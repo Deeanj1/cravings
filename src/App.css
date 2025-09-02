@@ -6,3 +6,6 @@
 .animate-color-change {
   animation: colorChange 1.2s infinite;
 }
+html {
+  scroll-behavior: smooth;
+}

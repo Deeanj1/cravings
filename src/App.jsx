@@ -20,7 +20,8 @@ export default function App() {
 
 function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [quantities, setQuantities] = useState({}); // { key: qty }
+  const [quantities, setQuantities] = useState({});
+  const [activeProduct, setActiveProduct] = useState(null);
   const navigate = useNavigate();
 
   const pricingPlans = [
@@ -30,21 +31,23 @@ function Home() {
     { key: "large",  img: newone,  title: "Large Platter",  desc: "Mixed fried small chops, feeds 7–12", price: 30000 },
   ];
 
-  const increment = (key) => setQuantities(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+  const increment = (key) =>
+    setQuantities((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+
   const decrement = (key) => {
-    setQuantities(prev => {
+    setQuantities((prev) => {
       const next = Math.max(0, (prev[key] || 0) - 1);
       if (next === 0) {
         const { [key]: _omit, ...rest } = prev;
-        return rest; // deselect when qty returns to 0
+        return rest;
       }
       return { ...prev, [key]: next };
     });
   };
 
   const cartItems = pricingPlans
-    .filter(p => (quantities[p.key] || 0) > 0)
-    .map(p => ({
+    .filter((p) => (quantities[p.key] || 0) > 0)
+    .map((p) => ({
       key: p.key,
       title: p.title,
       price: p.price,
@@ -56,7 +59,12 @@ function Home() {
   const totalUnits = cartItems.reduce((s, i) => s + i.qty, 0);
 
   const goToPayment = () => {
-    const payload = cartItems.map(({ key, title, price, qty }) => ({ key, title, price, qty }));
+    const payload = cartItems.map(({ key, title, price, qty }) => ({
+      key,
+      title,
+      price,
+      qty,
+    }));
     navigate(`/payment?items=${encodeURIComponent(JSON.stringify(payload))}`);
   };
 
@@ -134,12 +142,14 @@ function Home() {
         </div>
       </section>
 
-      {/* Pricing / Order Now with quantity controls */}
+      {/* Pricing */}
       <section id="pricing" className="bg-orange-50 py-20 px-6">
         <h2 className="text-3xl font-bold text-center text-orange-500 mb-12">Order Now</h2>
         <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          {pricingPlans.map(plan => {
+          {pricingPlans.map((plan) => {
             const qty = quantities[plan.key] || 0;
+            const isActive = activeProduct === plan.key;
+
             return (
               <div
                 key={plan.key}
@@ -152,25 +162,36 @@ function Home() {
                 <p className="mb-4 text-gray-600">{plan.desc}</p>
                 <p className="text-orange-500 font-bold text-2xl mb-4">₦{plan.price.toLocaleString()}</p>
 
-                {/* Quantity stepper */}
-                <div className="mt-2 flex items-center justify-center gap-4">
+                {/* Order button or Stepper */}
+                {!isActive && qty === 0 && (
                   <button
-                    onClick={() => decrement(plan.key)}
-                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-xl disabled:opacity-40"
-                    disabled={qty === 0}
-                    aria-label={`Remove one ${plan.title}`}
+                    onClick={() => setActiveProduct(plan.key)}
+                    className="bg-orange-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-orange-600"
                   >
-                    −
+                    Order
                   </button>
-                  <span className="min-w-[2ch] text-lg font-bold">{qty}</span>
-                  <button
-                    onClick={() => increment(plan.key)}
-                    className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl hover:bg-orange-600"
-                    aria-label={`Add one ${plan.title}`}
-                  >
-                    +
-                  </button>
-                </div>
+                )}
+
+                {isActive && (
+                  <div className="mt-2 flex items-center justify-center gap-4">
+                    <button
+                      onClick={() => decrement(plan.key)}
+                      className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-xl disabled:opacity-40"
+                      disabled={qty === 0}
+                      aria-label={`Remove one ${plan.title}`}
+                    >
+                      −
+                    </button>
+                    <span className="min-w-[2ch] text-lg font-bold">{qty}</span>
+                    <button
+                      onClick={() => increment(plan.key)}
+                      className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl hover:bg-orange-600"
+                      aria-label={`Add one ${plan.title}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
 
                 {qty > 0 && (
                   <div className="mt-3 text-sm text-gray-700">
@@ -184,7 +205,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Large orders CTA */}
+      {/* Contact CTA */}
       <section id="order" className="py-20 px-6 max-w-4xl mx-auto text-center">
         <h2 className="text-3xl font-bold text-orange-500 mb-10">
           Planning a party or need event catering?
